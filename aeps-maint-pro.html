@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEPS-Maint Pro Ouahigouya | ONEA</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --onea-blue: #0056b3;
+            --onea-light-blue: #e3f2fd;
+            --sidebar-width: 260px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--onea-blue) 0%, #003d80 100%);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-brand {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-brand h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: #ffc107;
+        }
+        
+        .sidebar-menu i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding-top: var(--header-height);
+            transition: all 0.3s;
+        }
+        
+        /* Header */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--header-height);
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .user-menu {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Cards */
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--onea-blue);
+            transition: transform 0.2s;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--onea-blue);
+            margin: 10px 0;
+        }
+        
+        .kpi-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-actif { background: #d4edda; color: #155724; }
+        .status-panne { background: #f8d7da; color: #721c24; }
+        .status-maintenance { background: #fff3cd; color: #856404; }
+        
+        /* Tables */
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        
+        .data-table thead {
+            background: var(--onea-light-blue);
+        }
+        
+        .data-table th {
+            font-weight: 600;
+            color: var(--onea-blue);
+            padding: 12px 15px;
+        }
+        
+        .data-table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        /* Chat IA */
+        .chat-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+            background: white;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        
+        .message-user {
+            margin-left: auto;
+            background: var(--onea-blue);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px 12px 0 12px;
+        }
+        
+        .message-ai {
+            margin-right: auto;
+            background: white;
+            color: #333;
+            padding: 12px 16px;
+            border-radius: 12px 12px 12px 0;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* Pages */
+        .page-section {
+            display: none;
+            padding: 20px;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-navbar {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h4><i class="fas fa-tint"></i> AEPS-Maint Pro</h4>
+            <small>Ouahigouya - ONEA</small>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="active" data-page="dashboard">
+                <i class="fas fa-chart-line"></i> Tableau de bord
+            </a>
+            <a href="#" data-page="sites">
+                <i class="fas fa-map-marker-alt"></i> Sites AEPS/PEA
+            </a>
+            <a href="#" data-page="forages">
+                <i class="fas fa-bore-hole"></i> Forages
+            </a>
+            <a href="#" data-page="energy">
+                <i class="fas fa-solar-panel"></i> Sources d'Énergie
+            </a>
+            <a href="#" data-page="interventions">
+                <i class="fas fa-tools"></i> Interventions
+            </a>
+            <a href="#" data-page="pieces">
+                <i class="fas fa-cogs"></i> Pièces de Rechange
+            </a>
+            <a href="#" data-page="documents">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a href="#" data-page="rapports">
+                <i class="fas fa-file-pdf"></i> Rapports PDF
+            </a>
+            <a href="#" data-page="ia">
+                <i class="fas fa-robot"></i> Assistant IA
+            </a>
+            <a href="#" data-page="parametres">
+                <i class="fas fa-cog"></i> Paramètres
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+        <button class="btn btn-outline-primary d-md-none" id="toggleSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h5 class="mb-0 ms-3" id="pageTitle">Tableau de bord</h5>
+        <div class="user-menu">
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle"></i> Admin ONEA
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page-section active">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Sites</div>
+                        <div class="kpi-value">127</div>
+                        <small><i class="fas fa-check-circle text-success"></i> 112 actifs</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" style="border-left-color: #dc3545;">
+                        <div class="kpi-label">En Panne</div>
+                        <div class="kpi-value">8</div>
+                        <small><i class="fas fa-exclamation-triangle"></i> Intervention requise</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" style="border-left-color: #ffc107;">
+                        <div class="kpi-label">Interventions (Mois)</div>
+                        <div class="kpi-value">34</div>
+                        <small><i class="fas fa-clock"></i> 12 en cours</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" style="border-left-color: #28a745;">
+                        <div class="kpi-label">Taux Fonctionnement</div>
+                        <div class="kpi-value">94%</div>
+                        <small><i class="fas fa-arrow-up"></i> +2% vs mois dernier</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Évolution des Interventions</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="interventionsChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Répartition par Type</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="typeChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="data-table">
+                        <div class="p-3 border-bottom">
+                            <h6 class="mb-0"><i class="fas fa-history"></i> Dernières Interventions</h6>
+                        </div>
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Site</th>
+                                    <th>Type</th>
+                                    <th>Technicien</th>
+                                    <th>Statut</th>
+                                    <th>Coût</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>15/01/2025</td>
+                                    <td>AEPS Ouahigouya Centre</td>
+                                    <td>CURATIF</td>
+                                    <td>Jean Koulibaly</td>
+                                    <td><span class="status-badge status-actif">TERMINÉ</span></td>
+                                    <td>45 000 FCFA</td>
+                                </tr>
+                                <tr>
+                                    <td>14/01/2025</td>
+                                    <td>PEA Séguénéga</td>
+                                    <td>PRÉVENTIF</td>
+                                    <td>Mariame Traoré</td>
+                                    <td><span class="status-badge status-actif">TERMINÉ</span></td>
+                                    <td>12 000 FCFA</td>
+                                </tr>
+                                <tr>
+                                    <td>13/01/2025</td>
+                                    <td>AEPS Thiou</td>
+                                    <td>CURATIF</td>
+                                    <td>Ibrahim Sawadogo</td>
+                                    <td><span class="status-badge status-maintenance">EN COURS</span></td>
+                                    <td>28 000 FCFA</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites Page -->
+        <div id="sites" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-map-marker-alt"></i> Gestion des Sites AEPS/PEA</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouveau Site
+                </button>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Rechercher un site...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option>Toutes communes</option>
+                                <option>Ouahigouya</option>
+                                <option>Séguénéga</option>
+                                <option>Thiou</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option>Tous types</option>
+                                <option>AEPS</option>
+                                <option>PEA</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option>Tous statuts</option>
+                                <option>ACTIF</option>
+                                <option>EN PANNE</option>
+                                <option>ABANDONNÉ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100">
+                                <i class="fas fa-filter"></i> Filtrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Nom du Site</th>
+                            <th>Commune</th>
+                            <th>Village</th>
+                            <th>Type</th>
+                            <th>Forages</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AEPS-001</td>
+                            <td>AEPS Ouahigouya Centre</td>
+                            <td>Ouahigouya</td>
+                            <td>Centre-ville</td>
+                            <td>AEPS</td>
+                            <td>2</td>
+                            <td><span class="status-badge status-actif">ACTIF</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>PEA-015</td>
+                            <td>PEA Séguénéga Nord</td>
+                            <td>Séguénéga</td>
+                            <td>Kossouka</td>
+                            <td>PEA</td>
+                            <td>1</td>
+                            <td><span class="status-badge status-panne">EN PANNE</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Forages Page -->
+        <div id="forages" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-bore-hole"></i> Gestion des Forages</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouveau Forage
+                </button>
+            </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Un site peut avoir plusieurs forages. Chaque forage a ses propres caractéristiques techniques.
+            </div>
+            <div class="data-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Site</th>
+                            <th>Profondeur (m)</th>
+                            <th>Diamètre (mm)</th>
+                            <th>Type Pompe</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>F1-AEPS-001</td>
+                            <td>AEPS Ouahigouya Centre</td>
+                            <td>85.5</td>
+                            <td>200</td>
+                            <td>Submersible Grundfos</td>
+                            <td><span class="status-badge status-actif">OPÉRATIONNEL</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Energy Page -->
+        <div id="energy" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-solar-panel"></i> Sources d'Énergie</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle Source
+                </button>
+            </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Un site peut avoir plusieurs sources d'énergie (Solaire, Réseau, Groupe électrogène).
+            </div>
+            <div class="data-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Type</th>
+                            <th>Fournisseur</th>
+                            <th>Puissance (kW)</th>
+                            <th>Principale</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AEPS Ouahigouya Centre</td>
+                            <td>SOLAIRE</td>
+                            <td>ONEA</td>
+                            <td>5.5</td>
+                            <td><i class="fas fa-check text-success"></i></td>
+                            <td><span class="status-badge status-actif">ACTIF</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Interventions Page -->
+        <div id="interventions" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-tools"></i> Historique des Interventions</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle Intervention
+                </button>
+            </div>
+            <div class="data-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Site</th>
+                            <th>Type</th>
+                            <th>Technicien</th>
+                            <th>Diagnostic</th>
+                            <th>Coût</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>15/01/2025</td>
+                            <td>AEPS Ouahigouya Centre</td>
+                            <td>CURATIF</td>
+                            <td>Jean Koulibaly</td>
+                            <td>Pompe défectueuse</td>
+                            <td>45 000 FCFA</td>
+                            <td><span class="status-badge status-actif">TERMINÉ</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pieces Page -->
+        <div id="pieces" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-cogs"></i> Pièces de Rechange</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle Pièce
+                </button>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h6>Alertes Stock Bas</h6>
+                            <h3>5</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="data-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Nom</th>
+                            <th>Catégorie</th>
+                            <th>Prix Unitaire</th>
+                            <th>Stock</th>
+                            <th>Alerte</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PMP-001</td>
+                            <td>Pompe Submersible 5CV</td>
+                            <td>Pompe</td>
+                            <td>125 000 FCFA</td>
+                            <td>3</td>
+                            <td><span class="status-badge status-panne">BAS</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Documents Page -->
+        <div id="documents" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-file-alt"></i> Documents Techniques</h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Télécharger
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                            <h6>Fiche Technique AEPS-001.pdf</h6>
+                            <small>2.3 MB • 15/01/2025</small>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rapports Page -->
+        <div id="rapports" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-file-pdf"></i> Génération de Rapports PDF</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6><i class="fas fa-map-marker-alt"></i> Fiche Site</h6>
+                            <p class="text-muted">Rapport complet d'un site avec forages, énergie et interventions.</p>
+                            <button class="btn btn-outline-primary w-100">Générer</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6><i class="fas fa-calendar-alt"></i> Synthèse Mensuelle</h6>
+                            <p class="text-muted">Rapport des interventions et coûts par mois.</p>
+                            <button class="btn btn-outline-primary w-100">Générer</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h6><i class="fas fa-chart-bar"></i> Statistiques Annuelles</h6>
+                            <p class="text-muted">Analyse complète de l'année avec graphiques.</p>
+                            <button class="btn btn-outline-primary w-100">Générer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IA Page -->
+        <div id="ia" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-robot"></i> Assistant IA Technique</h4>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#configIAModal">
+                    <i class="fas fa-cog"></i> Configuration API
+                </button>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message message-ai">
+                        Bonjour ! Je suis votre assistant IA pour la maintenance des AEPS/PEA. 
+                        Je peux vous aider à analyser les pannes, générer des rapports, comparer des sites ou expliquer des données techniques.
+                        Comment puis-je vous aider aujourd'hui ?
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chatInput" placeholder="Posez votre question technique...">
+                        <button class="btn btn-primary" id="sendChat">
+                            <i class="fas fa-paper-plane"></i> Envoyer
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle"></i> L'IA utilise vos données locales pour fournir des réponses contextuelles.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parametres Page -->
+        <div id="parametres" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-cog"></i> Paramètres du Système</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="fas fa-robot"></i> Configuration IA</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Fournisseur IA</label>
+                                <select class="form-select">
+                                    <option value="mistral">Mistral AI</option>
+                                    <option value="groq">Groq</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Clé API</label>
+                                <input type="password" class="form-control" placeholder="Entrez votre clé API">
+                            </div>
+                            <button class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="fas fa-users"></i> Gestion des Utilisateurs</h6>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary mb-3">
+                                <i class="fas fa-plus"></i> Nouvel Utilisateur
+                            </button>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Rôle</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Admin ONEA</td>
+                                        <td>Administrateur</td>
+                                        <td><span class="status-badge status-actif">ACTIF</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Configuration IA -->
+    <div class="modal fade" id="configIAModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configuration de l'IA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fournisseur</label>
+                        <select class="form-select">
+                            <option value="mistral">Mistral AI (Recommandé)</option>
+                            <option value="groq">Groq</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Clé API</label>
+                        <input type="password" class="form-control" placeholder="sk-...">
+                        <small class="text-muted">Votre clé est chiffrée et stockée localement.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modèle</label>
+                        <select class="form-select">
+                            <option value="mistral-large">Mistral Large</option>
+                            <option value="mistral-medium">Mistral Medium</option>
+                            <option value="llama-70b">Llama 70B (Groq)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navigation entre les pages
+        document.querySelectorAll('[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links and pages
+                document.querySelectorAll('[data-page]').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked link and corresponding page
+                this.classList.add('active');
+                const pageId = this.getAttribute('data-page');
+                document.getElementById(pageId).classList.add('active');
+                
+                // Update page title
+                document.getElementById('pageTitle').textContent = this.textContent.trim();
+                
+                // Close mobile sidebar if open
+                if (window.innerWidth < 768) {
+                    document.getElementById('sidebar').classList.remove('show');
+                }
+            });
+        });
+
+        // Toggle sidebar on mobile
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+
+        // Chat IA simulation
+        document.getElementById('sendChat').addEventListener('click', function() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add user message
+                const chatMessages = document.getElementById('chatMessages');
+                const userMsg = document.createElement('div');
+                userMsg.className = 'message message-user';
+                userMsg.textContent = message;
+                chatMessages.appendChild(userMsg);
+                
+                // Clear input
+                input.value = '';
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'message message-ai';
+                    aiMsg.innerHTML = `Merci pour votre question. En tant qu'assistant IA, je peux analyser vos données de maintenance. Pour une réponse précise, veuillez configurer votre clé API dans les paramètres.<br><br>Exemple de réponse : "Le site AEPS-001 présente un taux de panne de 12% ce mois-ci, principalement dû aux problèmes de pompe submersible. Je recommande une maintenance préventive sur les 3 prochains forages."`;
+                    chatMessages.appendChild(aiMsg);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 1000);
+            }
+        });
+
+        // Allow Enter key to send message
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('sendChat').click();
+            }
+        });
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Interventions Chart
+            const interventionsCtx = document.getElementById('interventionsChart').getContext('2d');
+            new Chart(interventionsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                    datasets: [{
+                        label: 'Interventions',
+                        data: [12, 19, 15, 25, 22, 30],
+                        borderColor: '#0056b3',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 86, 179, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Type Chart
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Curatif', 'Préventif', 'Installation', 'Inspection'],
+                    datasets: [{
+                        data: [45, 30, 15, 10],
+                        backgroundColor: ['#dc3545', '#28a745', '#ffc107', '#17a2b8']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
