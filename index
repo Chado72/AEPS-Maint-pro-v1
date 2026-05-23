@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEPS-Maint Pro Ouahigouya | ONEA</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #005691; /* Bleu ONEA approximatif */
+            --secondary-color: #00a8e8;
+            --accent-color: #fca311;
+            --dark-bg: #1e293b;
+            --light-bg: #f8f9fa;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            margin-left: 0;
+            background-color: var(--dark-bg);
+            color: #fff;
+            position: fixed;
+            transition: margin 0.25s ease-out;
+            z-index: 1000;
+        }
+
+        .sidebar-heading {
+            padding: 1.5rem 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .list-group-item {
+            background-color: transparent;
+            color: #cbd5e1;
+            border: none;
+            padding: 1rem 1.25rem;
+            font-weight: 400;
+        }
+
+        .list-group-item:hover, .list-group-item.active {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .list-group-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Page Content */
+        #page-content-wrapper {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            transition: margin 0.25s ease-out;
+        }
+
+        /* Navbar */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            background: #fff;
+        }
+
+        /* Cards & Widgets */
+        .card-kpi {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card-kpi:hover {
+            transform: translateY(-5px);
+        }
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Status Badges */
+        .badge-status-ok { background-color: #198754; }
+        .badge-status-warning { background-color: #ffc107; color: #000; }
+        .badge-status-danger { background-color: #dc3545; }
+
+        /* Chat IA */
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+        }
+        .message.bot {
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 2px;
+            align-self: flex-start;
+        }
+        .message.user {
+            background: var(--primary-color);
+            color: #fff;
+            border-bottom-right-radius: 2px;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar-wrapper { margin-left: calc(-1 * var(--sidebar-width)); }
+            #page-content-wrapper { margin-left: 0; width: 100%; }
+            #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+        }
+
+        /* Utility for Demo Navigation */
+        .section-view { display: none; }
+        .section-view.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+        <div class="sidebar-heading text-center">
+            <i class="fas fa-tint me-2"></i>AEPS-Maint Pro
+            <div style="font-size: 0.8rem; font-weight: 300; opacity: 0.8;">Ouahigouya | ONEA</div>
+        </div>
+        <div class="list-group list-group-flush mt-3">
+            <a href="#" class="list-group-item active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-chart-line"></i> Tableau de bord
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('sites', this)">
+                <i class="fas fa-map-marked-alt"></i> Sites & Forages
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('interventions', this)">
+                <i class="fas fa-tools"></i> Interventions
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('stock', this)">
+                <i class="fas fa-boxes"></i> Pièces de Rechange
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('reports', this)">
+                <i class="fas fa-file-pdf"></i> Rapports PDF
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('ai-assistant', this)">
+                <i class="fas fa-robot"></i> Assistant IA
+            </a>
+            <a href="#" class="list-group-item" onclick="showSection('settings', this)">
+                <i class="fas fa-cog"></i> Paramètres
+            </a>
+        </div>
+        <div class="mt-auto p-3" style="position: absolute; bottom: 0; width: 100%;">
+            <div class="d-flex align-items-center text-white">
+                <img src="https://ui-avatars.com/api/?name=Admin+ONEA&background=random" class="rounded-circle me-2" width="40">
+                <div>
+                    <small class="d-block fw-bold">Administrateur</small>
+                    <small class="text-white-50" style="font-size: 0.75rem;">Direction Provinciale</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3">
+            <button class="btn btn-outline-primary d-md-none" id="menu-toggle"><i class="fas fa-bars"></i></button>
+            
+            <h4 class="m-0 text-primary fw-bold" id="page-title">Tableau de bord</h4>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mt-2 mt-lg-0 align-items-center">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell me-1"></i> <span class="badge bg-danger rounded-pill">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow">
+                            <h6 class="dropdown-header">Alertes Maintenance</h6>
+                            <a class="dropdown-item" href="#"><small><strong>AEPS Séguénéga</strong>: Panne pompe</small></a>
+                            <a class="dropdown-item" href="#"><small><strong>PEA Boussouma</strong>: Niveau bas</small></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-center text-primary" href="#">Voir tout</a>
+                        </div>
+                    </li>
+                    <li class="nav-item ml-3">
+                        <a href="#" class="btn btn-sm btn-outline-danger ms-3" onclick="alert('Déconnexion...')">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Container -->
+        <div class="container-fluid px-4 py-4">
+
+            <!-- SECTION: DASHBOARD -->
+            <div id="dashboard" class="section-view active">
+                <!-- KPI Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card card-kpi h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Sites Actifs</h6>
+                                    <h3 class="fw-bold mb-0">142</h3>
+                                </div>
+                                <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                                    <i class="fas fa-water"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-kpi h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">En Panne</h6>
+                                    <h3 class="fw-bold mb-0 text-danger">5</h3>
+                                </div>
+                                <div class="icon-box bg-danger bg-opacity-10 text-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-kpi h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Interventions (Mois)</h6>
+                                    <h3 class="fw-bold mb-0">28</h3>
+                                </div>
+                                <div class="icon-box bg-success bg-opacity-10 text-success">
+                                    <i class="fas fa-wrench"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-kpi h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Coût Total (FCFA)</h6>
+                                    <h3 class="fw-bold mb-0">1.2M</h3>
+                                </div>
+                                <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts & Recent Activity -->
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold text-primary">Évolution des Pannes par Commune</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="mainChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold text-primary">Dernières Interventions</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item px-3 py-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1 fw-bold">AEPS Koumbri</h6>
+                                            <small class="text-muted">Il y a 2h</small>
+                                        </div>
+                                        <p class="mb-1 small">Remplacement clapet anti-retour.</p>
+                                        <span class="badge badge-status-ok">Terminé</span>
+                                    </div>
+                                    <div class="list-group-item px-3 py-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1 fw-bold">PEA Ziga</h6>
+                                            <small class="text-muted">Hier</small>
+                                        </div>
+                                        <p class="mb-1 small">Diagnostic panneau solaire défectueux.</p>
+                                        <span class="badge badge-status-warning">En attente pièce</span>
+                                    </div>
+                                    <div class="list-group-item px-3 py-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1 fw-bold">AEPS Bourzanga</h6>
+                                            <small class="text-muted">2 jours</small>
+                                        </div>
+                                        <p class="mb-1 small">Maintenance préventive trimestrielle.</p>
+                                        <span class="badge badge-status-ok">Terminé</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: SITES (Liste & Détail) -->
+            <div id="sites" class="section-view">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-primary">Liste des Sites (AEPS/PEA)</h5>
+                        <button class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Nouveau Site</button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filters -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" placeholder="Rechercher par nom, code, village...">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option value="">Toutes les communes</option>
+                                    <option>Ouahigouya</option>
+                                    <option>Séguénéga</option>
+                                    <option>Koumbri</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="ACTIF">Actif</option>
+                                    <option value="EN_PANNE">En Panne</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary w-100"><i class="fas fa-filter"></i> Filtrer</button>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Nom du Site</th>
+                                        <th>Commune / Village</th>
+                                        <th>Type</th>
+                                        <th>Forages</th>
+                                        <th>Statut</th>
+                                        <th>Dernière Intervention</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>AEPS-001</strong></td>
+                                        <td>AEPS Centre Ouahigouya</td>
+                                        <td>Ouahigouya / Secteur 4</td>
+                                        <td><span class="badge bg-info">AEPS</span></td>
+                                        <td><span class="badge bg-secondary">2</span></td>
+                                        <td><span class="badge badge-status-ok">Actif</span></td>
+                                        <td>12/10/2023</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="Voir détail"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary" title="PDF"><i class="fas fa-file-pdf"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>PEA-045</strong></td>
+                                        <td>PEA Village de Tikaré</td>
+                                        <td>Séguénéga / Tikaré</td>
+                                        <td><span class="badge bg-success">PEA</span></td>
+                                        <td><span class="badge bg-secondary">1</span></td>
+                                        <td><span class="badge badge-status-danger">En Panne</span></td>
+                                        <td>05/10/2023</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-end">
+                                <li class="page-item disabled"><a class="page-link" href="#">Précédent</a></li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">Suivant</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Simulation Modal Detail Site (Visible via JS normalement, ici statique pour démo) -->
+                <div class="card shadow-sm border-0 mt-4 d-none" id="site-detail-view">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Détail : AEPS Centre Ouahigouya</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="siteTabs" role="tablist">
+                            <li class="nav-item"><button class="nav-link active">Informations Générales</button></li>
+                            <li class="nav-item"><button class="nav-link">Forages (2)</button></li>
+                            <li class="nav-item"><button class="nav-link">Sources d'Énergie</button></li>
+                            <li class="nav-item"><button class="nav-link">Historique Interventions</button></li>
+                        </ul>
+                        <div class="p-4 border border-top-0 bg-white">
+                            <p>Contenu détaillé du site avec onglets...</p>
+                            <div class="alert alert-info">
+                                <strong>Rappel Métier :</strong> Ce site possède 2 forages distincts (F1: Pompé, F2: Secours) et 2 sources d'énergie (Solaire + Réseau).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: INTERVENTIONS -->
+            <div id="interventions" class="section-view">
+                <div class="row">
+                    <div class="col-md-12 mb-3 text-end">
+                        <button class="btn btn-success"><i class="fas fa-plus-circle me-1"></i> Nouvelle Intervention</button>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Site</th>
+                                    <th>Technicien</th>
+                                    <th>Type</th>
+                                    <th>Diagnostic</th>
+                                    <th>Coût (FCFA)</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>24/10/2023</td>
+                                    <td>AEPS Séguénéga</td>
+                                    <td>Jean Ouédraogo</td>
+                                    <td><span class="badge bg-warning text-dark">Curatif</span></td>
+                                    <td>Panne moteur pompe</td>
+                                    <td>150,000</td>
+                                    <td><span class="badge badge-status-ok">Terminé</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-light"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-light"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: STOCK -->
+            <div id="stock" class="section-view">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm border-0 text-center p-3">
+                            <h3 class="text-primary">124</h3>
+                            <p class="text-muted">Pièces en stock</p>
+                            <hr>
+                            <h5 class="text-danger">5</h5>
+                            <p class="small text-muted">Alertes stock bas</p>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Catalogue Pièces</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Référence</th>
+                                            <th>Désignation</th>
+                                            <th>Catégorie</th>
+                                            <th>Prix Unitaire</th>
+                                            <th>Stock</th>
+                                            <th>État</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>PMP-001</td>
+                                            <td>Pompe Pedrollo CP 150</td>
+                                            <td>Pompe</td>
+                                            <td>85,000</td>
+                                            <td>3</td>
+                                            <td><span class="badge bg-success">OK</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>CLP-020</td>
+                                            <td>Clapet Anti-retour 2"</td>
+                                            <td>Tuyauterie</td>
+                                            <td>5,000</td>
+                                            <td>2</td>
+                                            <td><span class="badge bg-danger">Bas</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: AI ASSISTANT -->
+            <div id="ai-assistant" class="section-view">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="chat-container">
+                            <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-robot me-2"></i>Assistant Technique IA</h5>
+                                <span class="badge bg-success">Connecté (Mistral API)</span>
+                            </div>
+                            
+                            <div class="chat-messages" id="chatBox">
+                                <div class="message bot">
+                                    Bonjour ! Je suis l'assistant IA d'AEPS-Maint Pro. Je peux vous aider à analyser des pannes, rédiger des rapports ou comparer des sites. Que puis-je faire pour vous ?
+                                </div>
+                                <!-- Exemple message utilisateur -->
+                                <div class="message user">
+                                    Génère un résumé des pannes récurrentes sur les pompes solaires à Koumbri.
+                                </div>
+                                <div class="message bot">
+                                    <strong>Analyse des données pour Koumbri :</strong><br>
+                                    Sur les 6 derniers mois, 4 interventions ont été recensées sur les systèmes solaires à Koumbri.<br>
+                                    <ul>
+                                        <li>2 cas de régulateurs de charge défectueux (surtension).</li>
+                                        <li>1 cas de panneaux ombragés par végétation.</li>
+                                        <li>1 cas de câblage corroded.</li>
+                                    </ul>
+                                    <em>Recommandation :</em> Prévoir une campagne de débroussaillage et vérifier les réglages des onduleurs.
+                                </div>
+                            </div>
+
+                            <div class="p-3 border-top bg-white">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Posez votre question technique...">
+                                    <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> Envoyer</button>
+                                </div>
+                                <small class="text-muted mt-2 d-block" style="font-size: 0.75rem;">
+                                    <i class="fas fa-info-circle"></i> L'IA utilise vos données locales. Assurez-vous que votre clé API est configurée dans les paramètres.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: REPORTS -->
+            <div id="reports" class="section-view">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">Génération de Rapports PDF</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm p-3 text-center">
+                                    <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                                    <h5>Fiche Technique Site</h5>
+                                    <p class="small text-muted">Détails complets, forages, énergie et historique.</p>
+                                    <button class="btn btn-outline-primary btn-sm mt-auto">Générer</button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm p-3 text-center">
+                                    <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
+                                    <h5>Rapport Mensuel</h5>
+                                    <p class="small text-muted">Synthèse des interventions et coûts par commune.</p>
+                                    <button class="btn btn-outline-success btn-sm mt-auto">Générer</button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 border-0 shadow-sm p-3 text-center">
+                                    <i class="fas fa-chart-pie fa-3x text-warning mb-3"></i>
+                                    <h5>Statistiques Annuelles</h5>
+                                    <p class="small text-muted">Bilan global de la province du Yadéga.</p>
+                                    <button class="btn btn-outline-warning btn-sm mt-auto">Générer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- SECTION: SETTINGS -->
+             <div id="settings" class="section-view">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">Paramètres & Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Configuration IA</h6>
+                        <form>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Fournisseur IA</label>
+                                <div class="col-sm-10">
+                                    <select class="form-select">
+                                        <option>Mistral AI</option>
+                                        <option>Groq</option>
+                                        <option>OpenAI (Custom)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Clé API</label>
+                                <div class="col-sm-10">
+                                    <input type="password" class="form-control" value="sk-proj-xxxxxxxxxxxx" disabled>
+                                    <div class="form-text">Votre clé est chiffrée dans la base de données.</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">Sauvegarder</button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <h6 class="fw-bold mb-3">Utilisateurs & Rôles</h6>
+                        <p>Gestion des accès administrateurs, techniciens et observateurs.</p>
+                        <button class="btn btn-outline-secondary">Gérer les utilisateurs</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Navigation Logic (Single Page Demo)
+    function showSection(sectionId, element) {
+        // Hide all sections
+        document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+        // Show target section
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Update Sidebar Active State
+        document.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+
+        // Update Title
+        const titles = {
+            'dashboard': 'Tableau de bord',
+            'sites': 'Gestion des Sites & Forages',
+            'interventions': 'Suivi des Interventions',
+            'stock': 'Stock de Pièces de Rechange',
+            'reports': 'Rapports & Export PDF',
+            'ai-assistant': 'Assistant Intelligent',
+            'settings': 'Paramètres Système'
+        };
+        document.getElementById('page-title').innerText = titles[sectionId];
+
+        // Close mobile menu if open
+        if(window.innerWidth < 768) {
+            document.getElementById('wrapper').classList.remove('toggled');
+        }
+    }
+
+    // Toggle Sidebar Mobile
+    document.getElementById('menu-toggle').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('wrapper').classList.toggle('toggled');
+    });
+
+    // Initialize Chart.js (Demo Data)
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Ouahigouya', 'Séguénéga', 'Koumbri', 'Bourzanga', 'Ziga'],
+            datasets: [{
+                label: 'Nombre de pannes (6 mois)',
+                data: [12, 8, 5, 3, 7],
+                backgroundColor: '#005691',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
